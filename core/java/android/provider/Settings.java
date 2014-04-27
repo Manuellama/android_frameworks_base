@@ -1762,6 +1762,13 @@ public final class Settings {
             "bluetooth_discoverability_timeout";
 
         /**
+         * If all file types can be accepted over Bluetooth OBEX.
+         * @hide
+         */
+        public static final String BLUETOOTH_ACCEPT_ALL_FILES =
+            "bluetooth_accept_all_files";
+
+        /**
          * @deprecated Use {@link android.provider.Settings.Secure#LOCK_PATTERN_ENABLED}
          * instead
          */
@@ -2343,6 +2350,13 @@ public final class Settings {
         public static final String ACCELEROMETER_ROTATION = "accelerometer_rotation";
 
         /**
+         * Control whether the accelerometer will be used to change lockscreen
+         * orientation.  If 0, it will not be used; if 1, it will be used by default.
+         * @hide
+         */
+        public static final String LOCKSCREEN_ROTATION = "lockscreen_rotation";
+
+        /**
          * Control the type of rotation which can be performed using the accelerometer
          * if ACCELEROMETER_ROTATION is enabled.
          * Value is a bitwise combination of
@@ -2392,6 +2406,27 @@ public final class Settings {
          * @hide
          */
         public static final String VIBRATE_WHEN_RINGING = "vibrate_when_ringing";
+
+        /**
+         * Whether the phone ringtone should be played in an increasing manner
+         *
+         * @hide
+         */
+        public static final String INCREASING_RING = "increasing_ring";
+
+        /**
+         * Increase ringtone volume each ringing interval
+         *
+         * @hide
+         */
+        public static final String INCREASING_RING_INTERVAL = "increasing_ring_interval";
+
+        /**
+         * Volume level to start at for increasing ringtone
+         *
+         * @hide
+         */
+        public static final String INCREASING_RING_MIN_VOLUME = "increasing_ring_min_volume";
 
         /**
          * Whether the audible DTMF tones are played by the dialer when dialing. The value is
@@ -2813,6 +2848,42 @@ public final class Settings {
         public static final String ACTIVE_DISPLAY_DOUBLE_TAP = "active_display_double_tap";
 
         /**
+         * shake device to show/hide active display.
+         * @hide
+         */
+        public static final String ACTIVE_DISPLAY_SHAKE_EVENT = "active_display_shake_event";
+
+        /**
+         * force shake device to show active display.
+         * @hide
+         */
+        public static final String ACTIVE_DISPLAY_SHAKE_FORCE = "active_display_shake_force";
+
+        /**
+         * shake device to show/hide active display.
+         * @hide
+         */
+        public static final String ACTIVE_DISPLAY_SHAKE_QUITE_HOURS = "active_display_shake_quiet_hours";
+
+        /**
+         * shake threshold active display.
+         * @hide
+         */
+        public static final String ACTIVE_DISPLAY_SHAKE_THRESHOLD = "active_display_shake_threshold";
+
+        /**
+         * shake timeout active display.
+         * @hide
+         */
+        public static final String ACTIVE_DISPLAY_SHAKE_TIMEOUT = "active_display_shake_timeout";
+
+        /**
+         * shake between interval active display.
+         * @hide
+         */
+        public static final String ACTIVE_DISPLAY_SHAKE_LONGTHRESHOLD = "active_display_shake_long_threshold";
+
+        /**
          * Screen-On Notification Light
          * 0 - disable, default
          * 1 - enable
@@ -2962,6 +3033,18 @@ public final class Settings {
         public static final String QUICK_SWIPE = "quick_swipe";
 
         /**
+         * What application to launch when the user click the clock in the notification bar
+         * @hide
+         */
+        public static final String CLOCK_SHORTCUT = "clock_shortcut";
+
+        /**
+         * What application to launch when the user click the calendar in the notification bar
+         * @hide
+         */
+        public static final String CALENDAR_SHORTCUT = "calendar_shortcut";
+
+        /**
          * Show clear all recents button
          *  @hide
          */
@@ -2996,9 +3079,22 @@ public final class Settings {
          * Immersive mode global actions switch
          * 0 = no
          * 1 = yes
+         * 2 = hide navigation bar
+         * 3 = hide status bar
          * @hide
          */
         public static final String IMMERSIVE_MODE = "immersive_mode";
+
+        /**
+         * return value last immersive mode
+         * @hide
+         */
+        public static final String IMMERSIVE_LAST_ACTIVE_STATE = "immersive_last_active_state";
+
+        /**
+         * @hide
+         */
+        public static final String STATUSBAR_NOTIFICATION_ACTIVITY = "statusbar_notification_activity";
 
         /**
          * Show when WiFi or data mobile is sending/receiving data
@@ -3236,6 +3332,24 @@ public final class Settings {
         public static final String NAV_BUTTONS = "nav_buttons";
 
         /**
+         * Navigation bar height when it is on protrait
+         * @hide
+         */
+        public static final String NAVIGATION_BAR_HEIGHT = "navigation_bar_height";
+
+        /**
+         * Navigation bar height when it is on landscape
+         * @hide
+         */
+        public static final String NAVIGATION_BAR_HEIGHT_LANDSCAPE = "navigation_bar_height_landscape";
+
+        /**
+         * Navigation bar height when it is on landscape at the right
+         * @hide
+         */
+        public static final String NAVIGATION_BAR_WIDTH = "navigation_bar_width";
+
+        /**
          * Volume key controls ringtone or media sound stream
          *
          * @hide
@@ -3466,6 +3580,13 @@ public final class Settings {
         public static final String FORCE_SHOW_OVERFLOW_MENU = "force_show_overflow_menu";
 
         /**
+         * Enable handlign of oppo input event for camera flip (F1)
+         * and start camera app
+         * @hide
+         */
+        public static final String OPPO_CAMERA_FLIP_ENABLED = "oppo_camera_flip_enable";
+
+        /**
          * Settings to backup. This is here so that it's in the same place as the settings
          * keys and easy to update.
          *
@@ -3487,6 +3608,7 @@ public final class Settings {
             MMS_AUTO_RETRIEVAL_ON_ROAMING,
             BLUETOOTH_DISCOVERABILITY,
             BLUETOOTH_DISCOVERABILITY_TIMEOUT,
+            BLUETOOTH_ACCEPT_ALL_FILES,
             DIM_SCREEN,
             SCREEN_OFF_TIMEOUT,
             SCREEN_BRIGHTNESS,
@@ -3531,6 +3653,7 @@ public final class Settings {
             SIP_RECEIVE_CALLS,
             POINTER_SPEED,
             VIBRATE_WHEN_RINGING,
+            INCREASING_RING,
             RINGTONE,
             PHONE_BLACKLIST_ENABLED,
             PHONE_BLACKLIST_NOTIFY_ENABLED,

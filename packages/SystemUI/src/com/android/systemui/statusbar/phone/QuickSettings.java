@@ -32,6 +32,7 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.UserInfo;
 import android.content.res.Resources;
@@ -45,6 +46,7 @@ import android.media.AudioManager;
 import android.media.MediaRouter;
 import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
+import android.nfc.NfcAdapter;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.PowerManager;
@@ -103,6 +105,7 @@ class QuickSettings {
         WIFI,
         RSSI,
         BLUETOOTH,
+        NFC,
         VOLUME,
         BATTERY,
         ROTATION,
@@ -123,7 +126,8 @@ class QuickSettings {
         + DELIMITER + Tile.RSSI + DELIMITER + Tile.BLUETOOTH + DELIMITER + Tile.VOLUME
         + DELIMITER + Tile.BATTERY + DELIMITER + Tile.ROTATION+ DELIMITER + Tile.IMMERSIVE
         + DELIMITER + Tile.LOCATION + DELIMITER + Tile.AIRPLANE + DELIMITER + Tile.QUITEHOUR
-        + DELIMITER + Tile.USBMODE + DELIMITER + Tile.SLEEP + DELIMITER + Tile.SYNC;
+        + DELIMITER + Tile.USBMODE + DELIMITER + Tile.SLEEP + DELIMITER + Tile.SYNC
+        + DELIMITER + Tile.NFC;
 
     private Context mContext;
     private PanelBar mBar;
@@ -343,8 +347,9 @@ class QuickSettings {
         if (mBatteryTile == null || mModel == null) {
             return;
         }
-        mBatteryStyle = Settings.System.getInt(mContext.getContentResolver(),
-                                Settings.System.STATUS_BAR_BATTERY_STYLE, 0);
+        mBatteryStyle = Settings.System.getIntForUser(mContext.getContentResolver(),
+                                Settings.System.STATUS_BAR_BATTERY_STYLE, 0
+                        , UserHandle.USER_CURRENT);
         mBatteryTile.updateBatterySettings();
         mModel.refreshBatteryTile();
     }
@@ -356,8 +361,8 @@ class QuickSettings {
         if (reset) {
             parent.removeAllViews();
         }
-        String tileContainer = Settings.System.getString(mContext.getContentResolver(),
-                Settings.System.QUICK_SETTINGS_TILES);
+        String tileContainer = Settings.System.getStringForUser(mContext.getContentResolver(),
+                Settings.System.QUICK_SETTINGS_TILES, UserHandle.USER_CURRENT);
         if (tileContainer == null) tileContainer = DEFAULT_TILES;
         Tile[] allTiles = Tile.values();
         String[] storedTiles = tileContainer.split(DELIMITER);
@@ -480,8 +485,8 @@ class QuickSettings {
                   if (addMissing) settingsTile.setVisibility(View.GONE);
                } else if (Tile.WIFI.toString().equals(tile.toString())) { // wifi tile
                   // Wi-fi
-                  final QuickSettingsFlipTile wifiTile
-                        = new QuickSettingsFlipTile(mContext);
+                  final QuickSettingsWifiFlipTile wifiTile
+                        = new QuickSettingsWifiFlipTile(mContext);
 
                   wifiTile.setTileId(Tile.WIFI);
                   wifiTile.setFrontOnLongClickListener(new View.OnLongClickListener() {
@@ -515,13 +520,16 @@ class QuickSettings {
                             wifiTile.setFrontPressed(false);
                   }} );
 
-                  mModel.addWifiTile(wifiTile.getFront(), new NetworkActivityCallback() {
+                  mModel.addWifiTile(wifiTile.getFront(), new WifiActivityCallback() {
                         private String mPreviousLabel = "";
 
                         @Override
                         public void refreshView(QuickSettingsTileView view, State state) {
                             WifiState wifiState = (WifiState) state;
                             wifiTile.setFrontImageResource(wifiState.iconId);
+
+                            setWifiActivity(view, wifiState);
+
                             wifiTile.setFrontText(wifiState.label);
                             wifiTile.setFrontContentDescription(mContext.getString(
                                  R.string.accessibility_quick_settings_wifi,
@@ -577,7 +585,7 @@ class QuickSettings {
                       rssiTile.setFrontOnClickListener(new View.OnClickListener() {
                            @Override
                            public void onClick(View v) {
-                              boolean currentState = cms.getMobileDataEnabled();
+                              boolean currentState = mModel.isMobileDataEnabled();
                               cms.setMobileDataEnabled(!currentState);
                       }} );
                       rssiTile.setFrontOnLongClickListener(new View.OnLongClickListener() {
@@ -604,7 +612,7 @@ class QuickSettings {
                                 } else {
                                     rssiTile.setFrontImageOverlayDrawable(null);
                                 }
-                                setActivity(view, rssiState);
+                                setRssiActivity(view, rssiState);
 
                                 rssiTile.setFrontText(state.label);
                                 rssiTile.setContentDescription(mContext.getResources().getString(
@@ -736,24 +744,31 @@ class QuickSettings {
                   if (addMissing) mBatteryTile.setVisibility(View.GONE);
                } else if (Tile.IMMERSIVE.toString().equals(tile.toString())) { // Immersive tile
                   // Immersive mode
-                  final QuickSettingsBasicTile immersiveTile
-                       = new QuickSettingsBasicTile(mContext);
+                  final QuickSettingsFlipTile immersiveTile
+                       = new QuickSettingsFlipTile(mContext);
 
                   immersiveTile.setTileId(Tile.IMMERSIVE);
-                  immersiveTile.setImageResource(R.drawable.ic_qs_immersive_off);
-                  immersiveTile.setTextResource(R.string.quick_settings_immersive_mode_off_label);
-                  immersiveTile.setOnClickListener(new View.OnClickListener() {
-                       @Override
-                       public void onClick(View v) {
-                           collapsePanels();
-                           boolean checkModeOn = Settings.System.getInt(mContext
-                                  .getContentResolver(), Settings.System.IMMERSIVE_MODE, 0) == 1;
-                           Settings.System.putInt(mContext.getContentResolver(),
-                                 Settings.System.IMMERSIVE_MODE, checkModeOn ? 0 : 1);
-                      }
+                  immersiveTile.setSupportFlip(DeviceUtils.deviceSupportNavigationBar(mContext));
+                  immersiveTile.setFrontImageResource(R.drawable.ic_qs_immersive_global_off);
+                  immersiveTile.setFrontText(mContext.getString(R.string.quick_settings_immersive_global_off_label));
+                  mModel.addImmersiveFrontTile(immersiveTile.getFront(), new QuickSettingsModel.RefreshCallback() {
+                        @Override
+                        public void refreshView(QuickSettingsTileView unused, State state) {
+                            immersiveTile.setFrontImageResource(state.iconId);
+                            immersiveTile.setFrontText(state.label);
+
+                        }
                   });
-                  mModel.addImmersiveTile(immersiveTile,
-                        new QuickSettingsModel.BasicRefreshCallback(immersiveTile));
+                  immersiveTile.setBackImageResource(R.drawable.ic_qs_immersive_off);
+                  immersiveTile.setBackLabel(mContext.getString(R.string.quick_settings_volume_status));
+                  mModel.addImmersiveBackTile(immersiveTile.getBack(), new QuickSettingsModel.RefreshCallback() {
+                        @Override
+                        public void refreshView(QuickSettingsTileView unused, State state) {
+                            immersiveTile.setBackImageResource(state.iconId);
+                            immersiveTile.setBackFunction(state.label);
+
+                        }
+                  });
                   parent.addView(immersiveTile);
                   if (addMissing) immersiveTile.setVisibility(View.GONE);
                } else if (Tile.AIRPLANE.toString().equals(tile.toString())) { // airplane tile
@@ -865,10 +880,12 @@ class QuickSettings {
                   quiteHourTile.setOnClickListener(new View.OnClickListener() {
                        @Override
                        public void onClick(View v) {
-                           boolean checkModeOn = Settings.System.getInt(mContext
-                                  .getContentResolver(), Settings.System.QUIET_HOURS_ENABLED, 0) == 1;
-                           Settings.System.putInt(mContext.getContentResolver(),
-                                 Settings.System.QUIET_HOURS_ENABLED, checkModeOn ? 0 : 1);
+                           boolean checkModeOn = Settings.System.getIntForUser(mContext
+                                  .getContentResolver(), Settings.System.QUIET_HOURS_ENABLED, 0
+                                  , UserHandle.USER_CURRENT) != 0;
+                           Settings.System.putIntForUser(mContext.getContentResolver(),
+                                 Settings.System.QUIET_HOURS_ENABLED, checkModeOn ? 0 : 1
+                                 , UserHandle.USER_CURRENT);
                            Intent scheduleSms = new Intent();
                            scheduleSms.setAction("com.android.settings.slim.service.SCHEDULE_SERVICE_COMMAND");
                            mContext.sendBroadcast(scheduleSms);
@@ -877,11 +894,11 @@ class QuickSettings {
                   quiteHourTile.setOnLongClickListener(new View.OnLongClickListener() {
                       @Override
                       public boolean onLongClick(View v) {
-                           Intent intent = new Intent(Intent.ACTION_MAIN);
-                           intent.setClassName("com.android.settings",
-                                  "com.android.settings.Settings$QuietHoursSettingsActivity");
-                           startSettingsActivity(intent);
-                           return true;
+                          Intent intent = new Intent(Intent.ACTION_MAIN);
+                          intent.setClassName("com.android.settings",
+                                 "com.android.settings.Settings$QuietHoursSettingsActivity");
+                          startSettingsActivity(intent);
+                          return true;
                       }
                   });
                   mModel.addQuiteHourTile(quiteHourTile,
@@ -1056,6 +1073,38 @@ class QuickSettings {
                       });
                       parent.addView(bluetoothTile);
                       if (addMissing) bluetoothTile.setVisibility(View.GONE);
+                  }
+               } else if (Tile.NFC.toString().equals(tile.toString())) { // NFC tile
+                  // NFC
+                  if(mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_NFC)) {
+                      final QuickSettingsBasicTile nfcTile = new QuickSettingsBasicTile(mContext);
+
+                      nfcTile.setTileId(Tile.NFC);
+                      nfcTile.setImageResource(R.drawable.ic_qs_nfc_off);
+                      nfcTile.setTextResource(R.string.quick_settings_nfc_off);
+                      nfcTile.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                try {
+                                    if(NfcAdapter.getNfcAdapter(mContext).isEnabled()) {
+                                        NfcAdapter.getNfcAdapter(mContext).disable();
+                                    } else {
+                                        NfcAdapter.getNfcAdapter(mContext).enable();
+                                    }
+                                } catch (Exception e) {}
+                            }
+                      });
+                      nfcTile.setOnLongClickListener(new View.OnLongClickListener() {
+                            @Override
+                            public boolean onLongClick(View v) {
+                                startSettingsActivity(android.provider.Settings.ACTION_WIRELESS_SETTINGS);
+                                return true;
+                            }
+                      });
+                      mModel.addNfcTile(nfcTile,
+                             new QuickSettingsModel.BasicRefreshCallback(nfcTile));
+                      parent.addView(nfcTile);
+                      if (addMissing) nfcTile.setVisibility(View.GONE);
                   }
                } else if (Tile.LOCATION.toString().equals(tile.toString())) { // Location
                  // Location
@@ -1387,9 +1436,30 @@ class QuickSettings {
         private final long mDefaultDuration = new ValueAnimator().getDuration();
         private final long mShortDuration = mDefaultDuration / 3;
 
-        public void setActivity(View view, ActivityState state) {
-            setVisibility(view.findViewById(R.id.activity_in), state.activityIn);
-            setVisibility(view.findViewById(R.id.activity_out), state.activityOut);
+        public void setRssiActivity(View view, ActivityState state) {
+            setVisibility(view.findViewById(R.id.rssi_activity_in), state.activityIn);
+            setVisibility(view.findViewById(R.id.rssi_activity_out), state.activityOut);
+        }
+
+        private void setVisibility(View view, boolean visible) {
+            final float newAlpha = visible ? 1 : 0;
+            if (view.getAlpha() != newAlpha) {
+                view.animate()
+                    .setDuration(visible ? mShortDuration : mDefaultDuration)
+                    .alpha(newAlpha)
+                    .start();
+            }
+        }
+    }
+
+    private abstract static class WifiActivityCallback
+            implements QuickSettingsModel.RefreshCallback {
+        private final long mDefaultDuration = new ValueAnimator().getDuration();
+        private final long mShortDuration = mDefaultDuration / 3;
+
+        public void setWifiActivity(View view, ActivityState state) {
+            setVisibility(view.findViewById(R.id.wifi_activity_in), state.activityIn);
+            setVisibility(view.findViewById(R.id.wifi_activity_out), state.activityOut);
         }
 
         private void setVisibility(View view, boolean visible) {

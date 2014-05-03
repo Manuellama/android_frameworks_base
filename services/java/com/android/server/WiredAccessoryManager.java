@@ -407,7 +407,6 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
                     mContext.sendBroadcast(i);
                     return;
                 }
-                int state = validateSwitchState(Integer.parseInt(event.get("SWITCH_STATE")));
                 synchronized (mLock) {
                     updateStateLocked(devPath, name, state);
                 }

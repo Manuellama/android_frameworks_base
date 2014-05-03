@@ -66,6 +66,7 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
 
     private static final String NAME_H2W = "h2w";
     private static final String NAME_USB_AUDIO = "usb_audio";
+    private static final String NAME_USB_HEADSET_AUDIO = "usb_headset";
     private static final String NAME_HDMI_AUDIO = "hdmi_audio";
     private static final String NAME_HDMI = "hdmi";
 
@@ -85,7 +86,10 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
 
     private final boolean mUseDevInputEventForAudioJack;
 
+    private final Context mContext;
+
     public WiredAccessoryManager(Context context, InputManagerService inputManager) {
+        mContext = context;
         PowerManager pm = (PowerManager)context.getSystemService(Context.POWER_SERVICE);
         mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "WiredAccessoryManager");
         mWakeLock.setReferenceCounted(false);
@@ -354,6 +358,14 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
                 Slog.w(TAG, "This kernel does not have usb audio support");
             }
 
+            // Monitor USB
+            uei = new UEventInfo(NAME_USB_HEADSET_AUDIO, BIT_USB_HEADSET_ANLG, BIT_USB_HEADSET_DGTL);
+            if (uei.checkSwitchExists()) {
+                retVal.add(uei);
+            } else {
+                Slog.w(TAG, "This kernel does not have usb headset audio support");
+            }
+
             // Monitor HDMI
             //
             // If the kernel has support for the "hdmi_audio" switch, use that.  It will be
@@ -384,6 +396,16 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
             try {
                 String devPath = event.get("DEVPATH");
                 String name = event.get("SWITCH_NAME");
+                if (name.equals("usb_headset")) {
+                    // Motorola usb headset
+                    Intent i = new Intent();
+                    i.setAction(Intent.ACTION_USB_AUDIO_DEVICE_PLUG);
+                    i.putExtra("state", state>0?1:0);
+                    i.putExtra("card", 0);
+                    i.putExtra("device", 0);
+                    mContext.sendBroadcast(i);
+                    return;
+                }
                 int state = validateSwitchState(Integer.parseInt(event.get("SWITCH_STATE")));
                 synchronized (mLock) {
                     updateStateLocked(devPath, name, state);

@@ -3057,6 +3057,24 @@ public final class Settings {
         public static final String VOLUME_WAKE_SCREEN = "volume_wake_screen";
 
         /**
+         * Swap volume buttons when the screen is rotated
+         * @hide
+         */
+        public static final String SWAP_VOLUME_BUTTONS = "swap_volume_buttons";
+
+        /**
+         * Swap volume disabled on 90 degrees
+         * @hide
+         */
+        public static final String SWAP_VOLUME_DISABLED_90 = "swap_volume_disabled_90";
+
+        /**
+         * Swap volume disabled on 270 degrees
+         * @hide
+         */
+        public static final String SWAP_VOLUME_DISABLED_270 = "swap_volume_disabled_270";
+
+        /**
          * volume rocker music track control enable/disable
          * @hide
          */
@@ -3137,6 +3155,12 @@ public final class Settings {
          * @hide
          */
         public static final String STATUS_BAR_NETWORK_ACTIVITY = "status_bar_network_activity";
+
+        /**
+         * Handle activation of immersive mode on lockscreen
+         * @hide
+         */
+        public static final String LOCKSCREEN_IMMERSIVE_MODE = "lockscreen_immersive_mode";
 
         /**
          * Whether or not to show circle battery around the lockscreen ring
@@ -3535,6 +3559,12 @@ public final class Settings {
         public static final int QUIET_HOURS_RINGER_DISABLED = 3;
 
         /**
+         * Constant: Only ring for whitelist contacts during quiet hours
+         * @hide
+         */
+        public static final int QUIET_HOURS_RINGER_WHITELIST_ONLY = 4;
+
+        /**
          * Whether to pause (overrule) quiet hours for the moment
          * @hide
          */
@@ -3545,6 +3575,61 @@ public final class Settings {
          * @hide
          */
         public static final String QUIET_HOURS_FORCED = "quiet_hours_forced";
+
+        /**
+         * @hide
+         */
+        public static final String QUIET_HOURS_WHITELIST = "quiet_hours_whitelist";
+
+        /**
+         * @hide
+         */
+        public static final String QUIET_HOURS_CALL_BYPASS = "quiet_hours_call_bypass";
+
+        /**
+         * @hide
+         */
+        public static final String QUIET_HOURS_CALL_BYPASS_COUNT = "quiet_hours_call_bypass_count";
+
+        /**
+         * @hide
+         */
+        public static final String QUIET_HOURS_SMS_BYPASS = "quiet_hours_sms_bypass";
+
+        /**
+         * @hide
+         */
+        public static final String QUIET_HOURS_SMS_BYPASS_CODE = "quiet_hours_sms_bypass_code";
+
+        /**
+         * @hide
+         */
+        public static final String QUIET_HOURS_AUTO_SMS = "quiet_hours_auto_sms";
+
+        /**
+         * @hide
+         */
+        public static final String QUIET_HOURS_AUTO_SMS_TEXT = "quiet_hours_auto_sms_text";
+
+        /**
+         * @hide
+         */
+        public static final String QUIET_HOURS_AUTO_CALL = "quiet_hours_auto_call";
+
+        /**
+         * @hide
+         */
+        public static final String QUIET_HOURS_ALARM_TONE = "quiet_hours_alarm_tone";
+
+        /**
+         * @hide
+         */
+        public static final String QUIET_HOURS_ALARM_LOOP = "quiet_hours_alarm_loop";
+
+        /**
+         * @hide
+         */
+        public static final String QUIET_HOURS_ACTIVE = "quiet_hours_active";
 
         /**
          * Quick Settings Quick Pulldown
@@ -6462,6 +6547,12 @@ public final class Settings {
          * @hide
          */
         public static final String SMS_SHORT_CODE_RULE = "sms_short_code_rule";
+
+       /**
+        * Used to select TCP's default initial receiver window size in segments - defaults to a build config value
+        * @hide
+        */
+       public static final String TCP_DEFAULT_INIT_RWND = "tcp_default_init_rwnd";
 
        /**
         * Used to disable Tethering on a device - defaults to true

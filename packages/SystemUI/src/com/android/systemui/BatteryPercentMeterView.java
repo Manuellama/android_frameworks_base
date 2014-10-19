@@ -71,6 +71,8 @@ public class BatteryPercentMeterView extends ImageView {
     private int    mChargingColorDefault;
     private int    mChargingBandHeight;
 
+    private int mCurrentColor = -3;
+
     // runnable to invalidate view via mHandler.postDelayed() call
     private final Runnable mInvalidate = new Runnable() {
         public void run() {
@@ -186,8 +188,13 @@ public class BatteryPercentMeterView extends ImageView {
             || (batteryStyle == 2 && mPercentBatteryView.equals(StatusBar));
         setVisibility(mActivated ? View.VISIBLE : View.GONE);
 
-        mChargingColorBg = getResources().getColor(com.android.systemui.R.color.batterymeter_percent_charging);
-        mChargingColorDefault = getResources().getColor(com.android.systemui.R.color.batterymeter_percent_color);
+        int chargingColorBg = getResources().getColor(com.android.systemui.R.color.batterymeter_percent_charging);
+        int chargingColorDefault = getResources().getColor(com.android.systemui.R.color.batterymeter_percent_color);
+        int nowColorBg = mCurrentColor != -3 ? mCurrentColor : chargingColorBg;
+        int nowColorDefault = mCurrentColor != -3 ? mCurrentColor : chargingColorDefault;
+
+        mChargingColorBg = nowColorBg;
+        mChargingColorDefault = nowColorDefault;
         mChargingColorFg = mChargingColorDefault;
 
         mPaintFontBg = new Paint();
@@ -209,6 +216,13 @@ public class BatteryPercentMeterView extends ImageView {
 
         if (mActivated && mAttached) {
             invalidate();
+        }
+    }
+
+    public void updateSettings(int defaultColor) {
+        if (mCurrentColor != defaultColor) {
+            mCurrentColor = defaultColor;
+            updateSettings();
         }
     }
 

@@ -91,6 +91,7 @@ public class NavbarEditor implements View.OnTouchListener {
      * Longpress runnable to assign buttons in edit mode
      */
     private Runnable mCheckLongPress = new Runnable() {
+        @Override
         public void run() {
             if (mInEditMode) {
                 mLongPressed = true;
@@ -324,7 +325,7 @@ public class NavbarEditor implements View.OnTouchListener {
     protected void saveKeys() {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < BUTTON_IDS.length; i++) {
-            int idIndex = mVertical ? BUTTON_IDS.length - i : i;
+            int idIndex = mVertical ? BUTTON_IDS.length - (i + 1) : i;
             ButtonInfo info = (ButtonInfo) mButtonViews.get(idIndex).getTag();
             if (i != 0) sb.append("|");
             sb.append(info.key);

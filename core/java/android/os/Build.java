@@ -95,6 +95,12 @@ public class Build {
          * 
          * @deprecated Use {@link #SDK_INT} to easily get this as an integer.
          */
+        
+            public static final String BASE_OS = SystemProperties.get("ro.build.version.base_os", "");
+            public static final String SECURITY_PATCH = SystemProperties.get(
+                "ro.build.version.security_patch", "");
+
+        
         @Deprecated
         public static final String SDK = getString("ro.build.version.sdk");
 
